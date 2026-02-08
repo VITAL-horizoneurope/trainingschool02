@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<model name="BG2" xmlns="http://www.cellml.org/cellml/1.1#" xmlns:cellml="http://www.cellml.org/cellml/1.1#">
+    <!-- Bond graph model of mechanical system-->
+    <units name="J_per_m">
+        <unit units="joule"/>
+        <unit exponent="-1" units="metre"/>
+    </units>
+    <units name="m_per_s">
+        <unit units="metre"/>
+        <unit exponent="-1" units="second"/>
+    </units>
+    <units name="m_per_s2">
+        <unit units="metre"/>
+        <unit exponent="-2" units="second"/>
+    </units>
+    <units name="m2_per_J">
+        <unit exponent="2" units="metre"/>
+        <unit exponent="-1" units="joule"/>
+    </units>
+    <units name="Js_per_m2">
+        <unit units="joule"/>
+        <unit units="second"/>
+        <unit exponent="-2" units="metre"/>
+    </units>
+    <units name="Js2_per_m2">
+        <unit units="joule"/>
+        <unit exponent="2" units="second"/>
+        <unit exponent="-2" units="metre"/>
+    </units>
+    <component name="main">
+        <variable name="t" units="second"/>
+        <!-- State variables-->
+        <variable initial_value="1" name="q_1" units="metre"/>
+        <variable initial_value="0" name="v_1" units="m_per_s"/>
+        <variable name="a_1" units="m_per_s2"/>
+        <variable name="u_C" units="J_per_m"/>
+        <variable name="u_R" units="J_per_m"/>
+        <variable name="u_L" units="J_per_m"/>
+        <!-- Constitutive parameters-->
+        <variable initial_value="20" name="C" units="m2_per_J"/>
+        <variable initial_value="0.1" name="R" units="Js_per_m2"/>
+        <variable initial_value="10" name="L" units="Js2_per_m2"/>
+        <!-- Conservation laws-->
+        <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+                <eq/>
+                <apply>
+                    <diff/>
+                    <bvar>
+                        <ci>t</ci>
+                    </bvar>
+                    <ci>q_1</ci>
+                </apply>
+                <ci>v_1</ci>
+            </apply>
+            <apply>
+                <eq/>
+                <apply>
+                    <diff/>
+                    <bvar>
+                        <ci>t</ci>
+                    </bvar>
+                    <ci>v_1</ci>
+                </apply>
+                <ci>a_1</ci>
+            </apply>
+            <!-- u_C         = -u_R-u_L;-->
+            <apply>
+                <eq/>
+                <ci>u_L</ci>
+                <apply>
+                    <minus/>
+                    <apply>
+                        <minus/>
+                        <ci>u_R</ci>
+                    </apply>
+                    <ci>u_C</ci>
+                </apply>
+            </apply>
+            <!-- Constitutive relations-->
+            <apply>
+                <eq/>
+                <ci>u_C</ci>
+                <apply>
+                    <divide/>
+                    <ci>q_1</ci>
+                    <ci>C</ci>
+                </apply>
+            </apply>
+            <apply>
+                <eq/>
+                <ci>u_R</ci>
+                <apply>
+                    <times/>
+                    <ci>v_1</ci>
+                    <ci>R</ci>
+                </apply>
+            </apply>
+            <!-- u_L = a_1*L;-->
+            <apply>
+                <eq/>
+                <ci>a_1</ci>
+                <apply>
+                    <divide/>
+                    <ci>u_L</ci>
+                    <ci>L</ci>
+                </apply>
+            </apply>
+        </math>
+    </component>
+</model>
