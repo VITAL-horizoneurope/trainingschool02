@@ -36,7 +36,7 @@ We will
 
 ## Option A - Run online through colab (recommended)
 [COLAB NOTEBOOK 1: warm-up](https://colab.research.google.com/github/VITAL-horizoneurope/trainingschool02/blob/main/Day03_SahliCostabal_Peirlinck/vital26TS02_botorch_multifidelity_1d.ipynb)  
-[COLAB NOTEBOOK 2: applied 0D model](https://colab.research.google.com/github/VITAL-horizoneurope/trainingschool02/blob/main/Day03_SahliCostabal_Peirlinck/vital26TS02_circulatory_model_tuning.ipynb)  
+[COLAB NOTEBOOK 2: calibrating 0D model](https://colab.research.google.com/github/VITAL-horizoneurope/trainingschool02/blob/main/Day03_SahliCostabal_Peirlinck/vital26TS02_circulatory_model_tuning.ipynb)  
 [COLAB NOTEBOOK 3: 1D waveform assignment](https://colab.research.google.com/github/VITAL-horizoneurope/trainingschool02/blob/main/Day03_SahliCostabal_Peirlinck/vital26TS02_pulse_wave_tutorial.ipynb)
 
 ### Option B — Run locally after creating a local enviroment
