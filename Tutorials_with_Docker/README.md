@@ -1,6 +1,4 @@
-# ABI Animus Lab Tutorials
-
-Welcome to the **ABI Animus Lab Tutorials** repository! This project is a comprehensive collection of tutorials and examples designed for bioengineering simulations, supporting Python, C++, VItA, VTK, OpenCOR, and more.
+# VITAL Training School 2 Tutorials with Docker
 
 ## Table of Contents
 
@@ -8,9 +6,6 @@ Welcome to the **ABI Animus Lab Tutorials** repository! This project is a compre
 - [Prerequisites](#prerequisites)
 - [Getting Started](#getting-started)
 - [Tutorials Overview](#tutorials-overview)
-  - [Tutorial 4: Python Environment](#tutorial-4-python-environment)
-  - [Tutorial 5: OpenCOR & Jupyter](#tutorial-5-opencor--jupyter)
-  - [Tutorial 6: Microvascular Modelling & VItA](#tutorial-6-microvascular-modelling--vita)
 - [Development Notes](#development-notes)
 - [CI/CD](#cicd)
 
@@ -18,7 +13,7 @@ Welcome to the **ABI Animus Lab Tutorials** repository! This project is a compre
 
 - **Multi-Language Support**: Examples in **Python** and **C++**.
 - **Containerized Environment**: Fully Dockerized setup for consistent development and deployment.
-- **Scientific Libraries**: Pre-configured with **VItA**, **VTK**, **OpenCOR**, **PETSc**, **SUNDIALS**, and **nlohmann-json**.
+- **Scientific Libraries**: Pre-configured with **VItA**, **VTK**, **OpenCOR**, **PETSc**, and more.
 - **Jupyter Lab Integration**: Interactive notebooks for tutorials and experimentation.
 - **Automated CI/CD**: GitHub Actions workflow for building and publishing Docker images.
 
@@ -91,10 +86,10 @@ Then run
 
 To start the environment locally for development:
 
-1.  Clone the repository:
+1.  Clone the [trainingschool02](https://github.com/VITAL-horizoneurope/trainingschool02) GitHub repository (``refactored`` branch) and enter the tutorials directory:
     ```bash
-    git clone https://github.com/ABI-Animus-Laboratory/abi-animus-lab-tutorials.git
-    cd abi-animus-lab-tutorials
+    git clone -b refactored https://github.com/VITAL-horizoneurope/trainingschool02.git
+    cd trainingschool02/Tutorials_with_Docker
     ```
 
 2.  Run the following command (pull and run the latest images from GitHub Container Registry):
@@ -122,25 +117,12 @@ To start the environment locally for development:
     ```
 *Note*: Since you are not building the Docker images locally in your machine, restart from step 2 everytime you shut down the Container or your machine.
 
-### Tutorial 6
-
-Please go to this link: https://github.com/AlirezaSharif/vital_multiscale
-
 ## Tutorials Overview
 
-### Tutorial 4: Python Environment
-Located in `tutorial_4/`, this tutorial focuses on establishing a robust Python environment.
-- **Key Files**: `tutorial_4.ipynb`, `requirements.txt`.
-- **Topics**: Setting up dependencies, verifying environment configuration.
-
-### Tutorial 5: OpenCOR & Jupyter
-Located in `tutorial_5/`, this tutorial demonstrates the integration of OpenCOR with Jupyter Lab.
-- **Key Files**: `test_opencor.ipynb`, `tutorial_5.ipynb`.
-- **Topics**: Launching OpenCOR from a notebook, scripting OpenCOR tasks.
-
-### Tutorial 6: Microvascular Modelling & VItA
-Please visit https://github.com/AlirezaSharif/vital_multiscale.
-- **Topics**: Microvascular modelling, VItA integration.
+- **tutorial_2_5_Argus_Ghitti_Davis**: From anatomical images to functional models (Tutorial 2); Generation and calibration of computational cardiovascular models (Tutorial 5).
+- **tutorial_4_Hoogeveen_Hermeling**: From devices to datasets, data recording & processing (available to run outside Docker as well, in ``trainingschool02/Day2_Hermeling_Hoogeveen/``).
+- **tutorial_6_Giudici**: Arterial constitutive modelling (available to run outside Docker as well, in ``trainingschool02/Day4_Giudici_Tutorial6/``).
+- **tutorial_6_MasoTalou_SharifzadehKermani**: Microvascular modelling & VItA integration. Please visit https://github.com/AlirezaSharif/vital_multiscale.
 
 ## Development Notes
 
@@ -155,7 +137,7 @@ docker compose up --build
 
 If you need to rebuild C++/VItA examples, ensure you are in the correct build directory within the container.
 1.  Open a terminal in Jupyter Lab (or attach to the running container).
-2.  Navigate to the build directory (e.g., inside `tutorial_6/vital_multiscale` or similar if applicable, checking structure).
+2.  Navigate to the build directory (e.g., inside `tutorial_6_MasoTalou_SharifzadehKermani/vital_multiscale` or similar if applicable, checking structure).
     *Note: Specific build paths may vary based on the tutorial's internal structure.*
 
 ## CI/CD
