@@ -1,0 +1,257 @@
+# OpenCOR 0.8.3 + ImageJ/Fiji 2.16.1 Tutorial Environment
+# Ubuntu 24.04 base with OpenCOR, ImageJ/Fiji and all dependencies pre-installed
+
+FROM ubuntu:24.04
+
+# Avoid interactive prompts during installation
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Pacific/Auckland
+
+# Set DISPLAY for X11 forwarding (required for ImageJ GUI)
+ENV DISPLAY=:0
+
+# Install system dependencies (OpenCOR + ImageJ/Fiji requirements)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    # Core utilities
+    wget \
+    curl \
+    ca-certificates \
+    unzip \
+    software-properties-common \
+    # Java runtime for ImageJ/Fiji
+    openjdk-8-jre \
+    # X11 libraries for ImageJ GUI
+    libxrender1 \
+    libxtst6 \
+    libxi6 \
+    libgtk2.0-0 \
+    # OpenCOR dependencies
+    libgl1 \
+    libxkbcommon-x11-0 \
+    libxcb-xinerama0 \
+    libxcb-cursor0 \
+    libxcb-icccm4 \
+    libxcb-image0 \
+    libxcb-keysyms1 \
+    libxcb-randr0 \
+    libxcb-render-util0 \
+    libxcb-shape0 \
+    libdbus-1-3 \
+    libpulse0 \
+    libnss3 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
+    libasound2t64 \
+    libatk1.0-0 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libdrm2 \
+    libgbm1 \
+    libpango-1.0-0 \
+    libcairo2 \
+    libfontconfig1 \
+    fonts-liberation \
+    xdg-utils \
+    # VItA build dependencies
+    git \
+    g++ \
+    make \
+    cmake \
+    libgl1-mesa-dev \
+    freeglut3-dev \
+    libglew-dev \
+    libglm-dev \
+    libfreetype6-dev \
+    # PETSc and Spack dependencies
+    build-essential \
+    gfortran \
+    libopenmpi-dev \
+    openmpi-bin \
+    libblas-dev \
+    liblapack-dev \
+    libmpich-dev \
+    python3-pip \
+    python3-numpy \
+    bzip2 \
+    gzip \
+    lsb-release \
+    patch \
+    tar \
+    xz-utils \
+    zstd \
+    && rm -rf /var/lib/apt/lists/*
+
+# -----------------------------------------------------------------------------
+# Install Spack and libraries (SUNDIALS, nlohmann-json)
+# -----------------------------------------------------------------------------
+ENV SPACK_ROOT=/opt/spack
+ENV PATH=${SPACK_ROOT}/bin:${PATH}
+
+RUN git clone -c feature.manyFiles=true --depth=2 https://github.com/spack/spack.git ${SPACK_ROOT} \
+    && . ${SPACK_ROOT}/share/spack/setup-env.sh \
+    && spack install sundials \
+    && spack install sundials~mpi \
+    && spack install nlohmann-json \
+    && spack clean -a
+
+# -----------------------------------------------------------------------------
+# Install PETSc
+# -----------------------------------------------------------------------------
+ENV PETSC_DIR=/opt/petsc
+ENV PETSC_ARCH=arch-linux-c-opt
+ENV PETSC_INSTALL=/opt/petsc-install
+ENV PATH=${PETSC_INSTALL}/bin:${PATH}
+ENV LD_LIBRARY_PATH=${PETSC_INSTALL}/lib:${LD_LIBRARY_PATH}
+# Allow running MPI as root during build (for 'make check' and general usage)
+ENV OMPI_ALLOW_RUN_AS_ROOT=1
+ENV OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+
+RUN git clone -b release https://gitlab.com/petsc/petsc.git ${PETSC_DIR} \
+    && cd ${PETSC_DIR} \
+    # Checkout specific version as per HOWTO (or latest stable release branch)
+    && git checkout v3.22.2 \
+    && ./configure \
+    --prefix=${PETSC_INSTALL} \
+    --with-debugging=0 \
+    --with-shared-libraries=1 \
+    --download-mpich=0 \
+    --download-fblaslapack \
+    --download-hdf5 \
+    --download-metis \
+    --download-parmetis \
+    --download-scalapack \
+    --download-mumps \
+    --download-hypre \
+    --with-openmp=1 \
+    --with-fortran-bindings=0 \
+    && make all check \
+    && make install \
+    # Clean up source to save space if desired (optional, but good for layer size)
+    && rm -rf ${PETSC_DIR}/src ${PETSC_DIR}/docs
+
+COPY . /tutorials/
+
+# Install Python 3.9.18 as an additional kernel
+RUN add-apt-repository -y ppa:deadsnakes/ppa \
+    && apt-get update \
+    && apt-get install -y python3.9 python3.9-distutils python3.9-dev \
+    && curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
+    && python3.9 get-pip.py --ignore-installed \
+    && python3.9 -m pip install ipykernel \
+    && python3.9 -m ipykernel install --name python3.9 --display-name "Python 3.9" \
+    && rm get-pip.py
+
+# Install Miniconda and configure the environment
+ENV CONDA_DIR=/opt/conda
+ENV PATH=$CONDA_DIR/bin:$PATH
+
+RUN wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /tmp/miniconda.sh \
+    && bash /tmp/miniconda.sh -b -p $CONDA_DIR \
+    && rm /tmp/miniconda.sh
+
+# Accept Conda Terms of Service (required for defaults channel)
+RUN conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/main \
+    && conda tos accept --override-channels --channel https://repo.anaconda.com/pkgs/r || true
+
+# Create the conda environment for tutorial_4
+# Create environment with Python 3.12.2 and install dependencies
+RUN conda create -n tutorial_4 python=3.12.2 -y \
+    && conda run -n tutorial_4 pip install --no-cache-dir -r /tutorials/tutorial_4/requirements.txt \
+    && conda run -n tutorial_4 pip install ipykernel \
+    && conda run -n tutorial_4 python -m ipykernel install --name tutorial_4 --display-name "Python (Tutorial 4)" \
+    && conda clean -ya
+
+# for tutorial 6
+# # Create the conda environment from file
+# # Install mamba for faster and better dependency resolution
+# # Remove expat/libexpat version pins which conflict with vtk (vtk needs libexpat <2.6.0 but env specifies 2.6.1)
+# # The solver will automatically install compatible expat versions as transitive dependencies
+# RUN conda install -n base -c conda-forge mamba -y \
+#     && sed -i '/^  - expat=/d' /tutorials/tutorial_6/environment.yml \
+#     && sed -i '/^  - libexpat=/d' /tutorials/tutorial_6/environment.yml \
+#     && mamba env create -f /tutorials/tutorial_6/environment.yml \
+#     && conda clean -ya
+
+# # Register the conda environment as a Jupyter kernel
+# # We install ipykernel explicitly in the environment to ensure it's available
+# RUN /opt/conda/envs/femSolver/bin/pip install ipykernel \
+#     && /opt/conda/envs/femSolver/bin/python -m ipykernel install --name femSolver --display-name "Python (femSolver)"
+
+# # Verify key packages are installed in the femSolver environment
+# RUN /opt/conda/envs/femSolver/bin/python -c "import numpy; print(f'numpy: {numpy.__version__}'); import scipy; print(f'scipy: {scipy.__version__}'); import pyvista; print(f'pyvista: {pyvista.__version__}'); import vtk; print(f'vtk: {vtk.vtkVersion.GetVTKVersion()}'); print('All key packages verified!')"
+
+# Download and install OpenCOR 0.8.3
+WORKDIR /tmp
+RUN wget -q https://github.com/opencor/opencor/releases/download/v0.8.3/OpenCOR-0-8-3-Linux.tar.gz \
+    && mkdir -p /opt/OpenCOR \
+    && tar -xzf OpenCOR-0-8-3-Linux.tar.gz -C /opt/OpenCOR --strip-components=1 \
+    && rm OpenCOR-0-8-3-Linux.tar.gz
+
+# Download and install ImageJ/Fiji (latest stable with bundled JDK)
+RUN wget -q https://downloads.imagej.net/fiji/latest/fiji-latest-linux64-jdk.zip \
+    && unzip -q fiji-latest-linux64-jdk.zip -d /opt \
+    && mv /opt/Fiji /opt/fiji \
+    && chmod +x /opt/fiji/fiji-linux-x64 \
+    && rm fiji-latest-linux64-jdk.zip
+
+# Download and install Ilastik 1.4.1.post1
+RUN wget -q https://files.ilastik.org/ilastik-1.4.1.post1-Linux.tar.bz2 \
+    && tar -xjf ilastik-1.4.1.post1-Linux.tar.bz2 -C /opt \
+    && mv /opt/ilastik-1.4.1.post1-Linux /opt/ilastik \
+    && rm ilastik-1.4.1.post1-Linux.tar.bz2 \
+    && chmod +x /opt/ilastik/run_ilastik.sh \
+    && ln -s /opt/ilastik/run_ilastik.sh /usr/local/bin/ilastik
+
+# Add OpenCOR and Fiji to PATH and set library path
+ENV PATH="/opt/OpenCOR/bin:/opt/OpenCOR:/opt/fiji:/opt/ilastik:${PATH}"
+ENV LD_LIBRARY_PATH="/opt/OpenCOR/lib:${LD_LIBRARY_PATH}"
+
+# Install Python dependencies using OpenCOR's pip
+RUN /opt/OpenCOR/pip install --no-cache-dir -r /tutorials/tutorial_5/requirements.txt
+
+# Fix the OpenCOR kernel.json to use full path
+RUN sed -i 's|"OpenCOR"|"/opt/OpenCOR/bin/OpenCOR"|g' /opt/OpenCOR/Python/share/jupyter/kernels/OpenCOR/kernel.json
+
+# Create working directory for notebooks
+WORKDIR /tutorials
+
+# Expose Jupyter port
+EXPOSE 8888
+
+# Create startup script using OpenCOR's jupyter wrapper with proper libs
+# ImageJ/Fiji can be launched manually for GUI access
+# Auto-detects DISPLAY for cross-platform support (Linux, Windows, Mac)
+RUN echo '#!/bin/bash\n\
+    export LD_LIBRARY_PATH="/opt/OpenCOR/lib:${LD_LIBRARY_PATH}"\n\
+    export PATH="/opt/OpenCOR/bin:/opt/OpenCOR:/opt/fiji:/opt/ilastik:${PATH}"\n\
+    export JUPYTER_CONFIG_DIR=/tmp/jupyter_config\n\
+    mkdir -p $JUPYTER_CONFIG_DIR\n\
+    \n\
+    # Auto-detect DISPLAY for cross-platform X11 support\n\
+    if [ -z "$DISPLAY" ]; then\n\
+    # No DISPLAY set, try to detect the best option\n\
+    if [ -e /tmp/.X11-unix/X0 ]; then\n\
+    # Linux with X11 socket available\n\
+    export DISPLAY=:0\n\
+    elif getent hosts host.docker.internal > /dev/null 2>&1; then\n\
+    # Windows/Mac Docker Desktop\n\
+    export DISPLAY=host.docker.internal:0\n\
+    fi\n\
+    fi\n\
+    \n\
+    \n\
+    cd /tutorials\n\
+    /opt/OpenCOR/Python/bin/jupyter notebook \\\n\
+    --ip=0.0.0.0 \\\n\
+    --port=8888 \\\n\
+    --no-browser \\\n\
+    --allow-root \\\n\
+    --ServerApp.token="" \\\n\
+    --ServerApp.password="" \\\n\
+    --notebook-dir=/tutorials' \
+    > /opt/OpenCOR/start_jupyter.sh \
+    && chmod +x /opt/OpenCOR/start_jupyter.sh
+
+# Default command: Start Jupyter Notebook
+CMD ["/opt/OpenCOR/start_jupyter.sh"]
