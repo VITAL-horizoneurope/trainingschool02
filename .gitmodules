@@ -1,0 +1,3 @@
+[submodule "Tutorials_with_Docker/tutorial_6_MasoTalou_SharifzadehKermani/vital_multiscale"]
+	path = Tutorials_with_Docker/tutorial_6_MasoTalou_SharifzadehKermani/vital_multiscale
+	url = https://github.com/AlirezaSharif/vital_multiscale.git
