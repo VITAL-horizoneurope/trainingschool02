@@ -1,3 +1,6 @@
 [submodule "Tutorials_with_Docker/tutorial_6_MasoTalou_SharifzadehKermani/vital_multiscale"]
 	path = Tutorials_with_Docker/tutorial_6_MasoTalou_SharifzadehKermani/vital_multiscale
 	url = https://github.com/AlirezaSharif/vital_multiscale.git
+[submodule "Tutorials_with_Docker/tutorial_2_5_Argus_Ghitti_Davis/circulatory_autogen"]
+	path = Tutorials_with_Docker/tutorial_2_5_Argus_Ghitti_Davis/circulatory_autogen
+	url = https://github.com/physiomelinks/circulatory_autogen.git
